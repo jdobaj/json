@@ -13602,6 +13602,78 @@ class output_vector_adapter : public output_adapter_protocol<CharType>
     std::vector<CharType, AllocatorType>& v;
 };
 
+template<typename CharType>
+class i3_pre_allocated_memory_buffer {
+  private:
+    CharType* m_pBuffer;
+    size_t m_capacity;
+    size_t m_size;
+
+  public:
+    i3_pre_allocated_memory_buffer() : m_pBuffer(nullptr), m_capacity(0), m_size(0) {}
+    i3_pre_allocated_memory_buffer(CharType* pBuffer, size_t capacity, size_t size) 
+        : m_pBuffer(pBuffer), m_capacity(capacity), m_size(size) {}
+    
+    size_t capacity() const {
+        return m_capacity;
+    }
+
+    size_t size() const {
+        return m_size;
+    }
+
+    void init(CharType* pBuffer, size_t capacity, size_t size) {
+        m_pBuffer = pBuffer;
+        m_capacity = capacity;
+        m_size = size;
+    }
+
+    CharType* data() {
+        return m_pBuffer;
+    }
+
+    void push_back(CharType c) {
+        if (m_size >= m_capacity) {
+            throw std::exception( "i3_pre_allocated_memory_buffer: out of memory" );
+        }
+        m_pBuffer[m_size] = c;
+        ++m_size;
+    }
+
+    void back_insertion(const CharType* s, size_t length) {
+        auto newSize = m_size + length;
+        if (newSize >= m_capacity) {
+            throw std::exception( "i3_pre_allocated_memory_buffer: out of memory" );
+        }
+        std::memcpy(&(m_pBuffer[m_size]), s, length);
+        m_size = newSize;
+    }
+};
+
+/// output adapter for pre-allocated memory buffers
+template<typename CharType>
+class output_i3_pre_allocated_memory_buffer_adapter : public output_adapter_protocol<CharType>
+{
+  public:
+    explicit output_i3_pre_allocated_memory_buffer_adapter(i3_pre_allocated_memory_buffer<CharType>& b) noexcept
+        : m_buffer(b)
+    {}
+
+    void write_character(CharType c) override
+    {
+        m_buffer.push_back(c);
+    }
+
+    JSON_HEDLEY_NON_NULL(2)
+    void write_characters(const CharType* s, std::size_t length) override
+    {
+        m_buffer.back_insertion(s, length);
+    }
+
+  private:
+    i3_pre_allocated_memory_buffer<CharType>& m_buffer;
+};
+
 #ifndef JSON_NO_IO
 /// output adapter for output streams
 template<typename CharType>
@@ -13667,6 +13739,9 @@ class output_adapter
 
     output_adapter(StringType& s)
         : oa(std::make_shared<output_string_adapter<CharType, StringType>>(s)) {}
+    
+    output_adapter(i3_pre_allocated_memory_buffer<CharType>& b)
+        : oa(std::make_shared<output_i3_pre_allocated_memory_buffer_adapter<CharType>>(b)) {}
 
     operator output_adapter_t<CharType>()
     {
