@@ -13640,6 +13640,34 @@ class i3_pre_allocated_memory_buffer {
         ++m_size;
     }
 
+    CharType* begin() {
+        if (m_pBuffer) {
+            return &(m_pBuffer[0]);
+        }
+        return nullptr;
+    }
+
+    CharType* end() {
+        if (m_pBuffer) {
+            return &(m_pBuffer[m_size]); // pointer might be out of bound, but this is ok, because it is never accessed
+        }
+        return nullptr;
+    }
+
+    const CharType* begin() const {
+        if (m_pBuffer) {
+            return &(m_pBuffer[0]);
+        }
+        return nullptr;
+    }
+
+    const CharType* end() const {
+        if (m_pBuffer) {
+            return &(m_pBuffer[m_size]); // pointer might be out of bound, but this is ok, because it is never accessed
+        }
+        return nullptr;
+    }
+
     void back_insertion(const CharType* s, size_t length) {
         auto newSize = m_size + length;
         if (newSize >= m_capacity) {
