@@ -13630,6 +13630,10 @@ class i3_pre_allocated_memory_buffer {
         return m_size;
     }
 
+    void reset_iterator() {
+        m_size = 0;
+    }
+
     void init(CharType* pBuffer, size_t capacity, size_t size) {
         m_pBuffer = pBuffer;
         m_capacity = capacity;
