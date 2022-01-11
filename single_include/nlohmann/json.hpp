@@ -13605,7 +13605,7 @@ class output_vector_adapter : public output_adapter_protocol<CharType>
 template<typename CharType>
 class i3_pre_allocated_memory_buffer {
   public:
-    using char_t = typename CharType;
+    using char_t = CharType;
 
   private:
     CharType* m_pBuffer;
@@ -13646,7 +13646,7 @@ class i3_pre_allocated_memory_buffer {
 
     void push_back(CharType c) {
         if (m_size >= m_capacity) {
-            throw std::exception( "i3_pre_allocated_memory_buffer: out of memory" );
+            throw std::logic_error( "i3_pre_allocated_memory_buffer: out of memory" );
         }
         m_pBuffer[m_size] = c;
         ++m_size;
@@ -13683,7 +13683,7 @@ class i3_pre_allocated_memory_buffer {
     void back_insertion(const CharType* s, size_t length) {
         auto newSize = m_size + length;
         if (newSize >= m_capacity) {
-            throw std::exception( "i3_pre_allocated_memory_buffer: out of memory" );
+            throw std::logic_error( "i3_pre_allocated_memory_buffer: out of memory" );
         }
         std::memcpy(&(m_pBuffer[m_size]), s, length);
         m_size = newSize;
