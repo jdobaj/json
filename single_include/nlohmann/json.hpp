@@ -13607,7 +13607,7 @@ class i3_pre_allocated_memory_buffer {
   public:
     using char_t = CharType;
 
-  private:
+  // protected: Quick fix of the mpmc shm queue issue
     CharType* m_pBuffer;
     size_t m_capacity;
     size_t m_size;
@@ -13622,29 +13622,29 @@ class i3_pre_allocated_memory_buffer {
 
     virtual ~i3_pre_allocated_memory_buffer() = default;
     
-    size_t capacity() const {
+    virtual size_t capacity() const {
         return m_capacity;
     }
 
-    size_t size() const {
+    virtual size_t size() const {
         return m_size;
     }
 
-    void reset_iterator() {
+    virtual void reset_iterator() {
         m_size = 0;
     }
 
-    void init(CharType* pBuffer, size_t capacity, size_t size) {
+    virtual void init(CharType* pBuffer, size_t capacity, size_t size) {
         m_pBuffer = pBuffer;
         m_capacity = capacity;
         m_size = size;
     }
 
-    CharType* data() {
+    virtual CharType* data() {
         return m_pBuffer;
     }
 
-    void push_back(CharType c) {
+    virtual void push_back(CharType c) {
         if (m_size >= m_capacity) {
             throw std::logic_error( "i3_pre_allocated_memory_buffer: out of memory" );
         }
@@ -13652,35 +13652,35 @@ class i3_pre_allocated_memory_buffer {
         ++m_size;
     }
 
-    CharType* begin() {
+    virtual CharType* begin() {
         if (m_pBuffer) {
             return &(m_pBuffer[0]);
         }
         return nullptr;
     }
 
-    CharType* end() {
+    virtual CharType* end() {
         if (m_pBuffer) {
             return &(m_pBuffer[m_size]); // pointer might be out of bound, but this is ok, because it is never accessed
         }
         return nullptr;
     }
 
-    const CharType* begin() const {
+    virtual const CharType* begin() const {
         if (m_pBuffer) {
             return &(m_pBuffer[0]);
         }
         return nullptr;
     }
 
-    const CharType* end() const {
+    virtual const CharType* end() const {
         if (m_pBuffer) {
             return &(m_pBuffer[m_size]); // pointer might be out of bound, but this is ok, because it is never accessed
         }
         return nullptr;
     }
 
-    void back_insertion(const CharType* s, size_t length) {
+    virtual void back_insertion(const CharType* s, size_t length) {
         auto newSize = m_size + length;
         if (newSize >= m_capacity) {
             throw std::logic_error( "i3_pre_allocated_memory_buffer: out of memory" );
